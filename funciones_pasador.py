@@ -26,9 +26,12 @@ def cargar_tabla_docentes(data, engine_con):
         with engine_con.connect() as con:
             con.execute('ALTER TABLE docentes ADD PRIMARY KEY(legajo);')
             con.execute('ALTER TABLE docentes ALTER COLUMN numero_documento TYPE text;')
-
+            # Preparo la tabla para cargar el máximo título del docente
+            con.execute('ALTER TABLE docentes ADD COLUMN maximo_titulo text;')
+            con.execute('ALTER TABLE docentes ADD COLUMN entidad_otorgante_titulo text;')
+            con.execute('ALTER TABLE docentes ADD COLUMN fecha_emision_titulo date;')
     except: # Si existe borro los registros y vuelvo a cargar los nuevos
-        engine_con.execute("DELETE FROM docentes;")
+        engine_con.execute("DELETE FROM docentes;")      
         data.to_sql('docentes', engine_con, index=False, if_exists='append')
 
 
@@ -108,6 +111,7 @@ def cargar_tabla_cargos(data, engine_con):
         data.to_sql('cargos', engine_con, index=False, if_exists='append')
         with engine_con.connect() as con:
             con.execute('UPDATE docentes d SET cuil = (SELECT cuil FROM cargos c WHERE d.legajo=c.legajo LIMIT 1);')
+            con.execute("UPDATE cargos SET docencia = FALSE WHERE division = 'Gestión';");
 
 
 def cargar_tabla_equipos_docentes(data, engine_con):
@@ -210,16 +214,23 @@ def cargar_tabla_licencias(data, engine_con):
     Se cargan las licencias (tanto remuneradas como no remuneradas) en función de un archivo
     unificado sacado de Interfaz Mapuche-UNLu
     '''
-
+    import numpy as np
+    
     data = data.drop(['Legajo', 'Apellido', 'Nombre', 'Tipo Documento', 'Número', 'Categoría', 'División'], axis=1)
-
+    
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
     data.columns = ['codigo_cargo', 'fecha_alta', 'fecha_baja', 'tipo_licencia', 'sede'] 
+
+    # Debo filtrar los registros con licencias (saco los que están vacíos en tipo_licencia)
+    data['tipo_licencia'].replace('', np.nan, inplace=True)
+    data.dropna(subset=['tipo_licencia'], inplace=True)
 
     # Guardar el dataframe en la DB
     try: # Pruebo en caso que no exista
         data.to_sql('licencias', engine_con, index=False, if_exists='fail')
         with engine_con.connect() as con:
+            con.execute('ALTER TABLE licencias ALTER COLUMN fecha_alta TYPE date USING (fecha_alta::date);')
+            con.execute('ALTER TABLE licencias ALTER COLUMN fecha_baja TYPE date USING (fecha_baja::date);')
             con.execute('ALTER TABLE licencias ADD PRIMARY KEY(codigo_cargo, fecha_alta);')
 
     except: # Si existe borro los registros y vuelvo a cargar los nuevos
@@ -243,4 +254,31 @@ def cargar_tabla_carreras(data, engine_con):
     except: # Si existe borro los registros y vuelvo a cargar los nuevos
         engine_con.execute("DELETE FROM carreras;")
         data.to_sql('carreras', engine_con, index=False, if_exists='append')
+        
+
+def cargar_maximo_titulo_en_docentes(data, engine_con):
+    ''' Carga el máximo titulo de cada docente en la tabla docentes en la DB PostgreSQL
+    en función del archivo descargado de Interfaz UNLu-Mapuche
+    '''
+    import math
+    # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
+    data.columns = ['legajo', 'apellido', 'nombres', 'maximo_titulo', 'entidad_otorgante_titulo', 'fecha_emision', 'codigo_acreditacion']
+
+    # Elimino la columna edad
+    data = data.drop(['apellido', 'nombres', 'codigo_acreditacion'], axis=1)
     
+    # Quito los espacios entre el texto en las columnas textuales (object)
+    data_coltexto = data.select_dtypes(['object'])
+    data[data_coltexto.columns] = data_coltexto.apply(lambda x: x.str.strip())
+
+    # Guardar el dataframe en la DB  
+    for index, row in data.iterrows():
+        legajo = row['legajo']
+        maximo_titulo = row['maximo_titulo']
+        entidad_otorgante_titulo = row['entidad_otorgante_titulo']
+        fecha_emision = str(row['fecha_emision'])
+        if  fecha_emision != 'nan':
+            engine_con.execute(f'UPDATE docentes SET maximo_titulo = \'{maximo_titulo}\', entidad_otorgante_titulo = \'{entidad_otorgante_titulo}\', fecha_emision_titulo = \'{fecha_emision}\' WHERE legajo={legajo};')
+        else:
+            engine_con.execute(f'UPDATE docentes SET maximo_titulo = \'{maximo_titulo}\', entidad_otorgante_titulo = \'{entidad_otorgante_titulo}\' WHERE legajo={legajo};')
+        

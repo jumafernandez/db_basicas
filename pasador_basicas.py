@@ -5,20 +5,27 @@ Created on Sat Apr 11 22:46:07 2020
 @author: unlu
 """
 
-def main(dir, file_docentes, file_cargos, file_licencias, file_equipos, file_materias, file_comisiones, file_carreras):
+def main(dir, file_docentes, file_cargos, file_licencias, file_equipos, file_materias, file_comisiones, file_carreras, file_estudios):
     
-    from funciones_pasador import cargar_tabla_cargos, cargar_tabla_equipos_docentes, cargar_tabla_actividades_academicas, cargar_tabla_oferta_academica, cargar_tabla_docentes, cargar_tabla_licencias, cargar_tabla_actividades_academicas_por_carrera, cargar_tabla_carreras
-    from funciones import file2df
+    from funciones_pasador import cargar_tabla_cargos, cargar_tabla_equipos_docentes, cargar_tabla_actividades_academicas, cargar_tabla_oferta_academica, cargar_tabla_docentes, cargar_tabla_licencias, cargar_tabla_actividades_academicas_por_carrera, cargar_tabla_carreras, cargar_maximo_titulo_en_docentes
+    from funciones import file2df, insert_fecha_update
     
     # Creación de la cadena de conexion
     from sqlalchemy import create_engine
     engine = create_engine('postgresql://postgres:888888@localhost:5432/exportaciones_basicas')
+    
+    # Actualizo la tabla con las actualizaciones
+    insert_fecha_update(engine)
     
     #Se llama a las funciones para llenar las tablas
     
     # docentes
     df = file2df(dir + file_docentes, True)
     cargar_tabla_docentes(df, engine)
+
+    # maxímo titulo
+    df = file2df(dir + file_estudios, True)
+    cargar_maximo_titulo_en_docentes(df, engine)
     
     # cargos
     df = file2df(dir + file_cargos, True)
@@ -51,7 +58,6 @@ def main(dir, file_docentes, file_cargos, file_licencias, file_equipos, file_mat
     # Se cierra el engine de conexión
     engine.dispose()
     
-    return df
 
 if __name__ == '__main__':
     # Path del archivo a cargar
@@ -63,5 +69,6 @@ if __name__ == '__main__':
     ARCHIVO_OFERTA      = 'Inscriptos-2-2019_1-2020-Basicas.xlsx'
     ARCHIVO_LICENCIAS   = 'basijuan_cat_escal_Por_Cargo_cuadro.xlsx'
     ARCHIVO_CARRERAS    = 'carreras.csv'
+    ARCHIVO_ESTUDIOS    = 'basijuan_nivel_educacion_max_nivel_cuadro.xlsx'
 
-    df = main(DIRECTORIO, ARCHIVO_DOCENTES, ARCHIVO_CARGOS, ARCHIVO_LICENCIAS, ARCHIVO_EQUIPOS, ARCHIVO_MATERIAS, ARCHIVO_OFERTA, ARCHIVO_CARRERAS)
+    main(DIRECTORIO, ARCHIVO_DOCENTES, ARCHIVO_CARGOS, ARCHIVO_LICENCIAS, ARCHIVO_EQUIPOS, ARCHIVO_MATERIAS, ARCHIVO_OFERTA, ARCHIVO_CARRERAS, ARCHIVO_ESTUDIOS)

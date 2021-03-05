@@ -22,6 +22,26 @@ def file2df(PATH_ARCHIVO, elimina_primera_fila):
     if extension == '.xlsx':
         data = pd.read_excel(PATH_ARCHIVO, skiprows=filas_ignoradas)
     else:
-        data = pd.read_csv(PATH_ARCHIVO, skiprows=filas_ignoradas)
+        data = pd.read_csv(PATH_ARCHIVO, skiprows=filas_ignoradas, sep=';')
 
     return data
+
+def insert_fecha_update(engine_con):
+    '''
+    Esta función actualiza la tabla fecha_actualizaciones de la BD
+    '''
+    import pandas as pd
+    from datetime import datetime
+
+    fecha_hora_actual = []
+    fecha_hora_actual.append(str(datetime.now()))
+    data = pd.DataFrame({"fecha_hora": fecha_hora_actual})
+
+    # Guardar el dataframe en la DB
+    try: # Pruebo en caso que no exista
+        data.to_sql('fecha_actualizaciones', engine_con, index=False, if_exists='fail')
+        with engine_con.connect() as con:
+            con.execute('ALTER TABLE fecha_actualizaciones ADD PRIMARY KEY(fecha_hora);')
+
+    except: # Si existe borro los registros y vuelvo a cargar los nuevos
+        data.to_sql('fecha_actualizaciones', engine_con, index=False, if_exists='append')
