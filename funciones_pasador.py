@@ -89,7 +89,7 @@ def cargar_tabla_cargos(data, engine_con):
     data.columns = ['legajo', 'apellido', 'nombres', 'cuil', 'codigo_cargo', 'fecha_alta', 'fecha_baja', 'caracter', 'codigo_categoria', 'categoria', 'tipo_categoria4', 'tipo_norma', 'numero_norma', 'emisor', 'division', 'cargo_docencia', 'dedicacion_docencia']
 
     # Elimino las columnas repetidas en otra tabla
-    data = data.drop(['apellido', 'nombres', 'categoria', 'tipo_categoria4'], axis=1)
+    data = data.drop(['categoria', 'tipo_categoria4'], axis=1)
 
     # Guardar el dataframe en la DB
     try: # Pruebo en caso que no exista

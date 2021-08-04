@@ -61,7 +61,7 @@ def main(dir, file_docentes, file_cargos, file_licencias, file_equipos, file_mat
 
 if __name__ == '__main__':
     # Path del archivo a cargar
-    DIRECTORIO = 'C:/Users/unlu/Google Drive/PC-Juan/Secretaría Académica/exportaciones_basicas/data/'
+    DIRECTORIO = 'C:/Users/Juan/Documents/GitHub/db_basicas/data/'
     ARCHIVO_DOCENTES    = 'basijuan_domicilio_todos.xlsx'
     ARCHIVO_CARGOS      = 'basijuan_cargos_vigentes.xlsx'
     ARCHIVO_EQUIPOS     = 'Equipos_Docentes_2-2019-1-2020.xlsx'
