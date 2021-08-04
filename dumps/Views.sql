@@ -285,3 +285,21 @@ CREATE OR REPLACE VIEW public.docente_por_maximo_cargo AS
 ALTER TABLE public.docente_por_maximo_cargo
   OWNER TO postgres;
 
+CREATE OR REPLACE VIEW docente_por_tipo_titulo AS
+SELECT	d.legajo,
+		CASE 	WHEN POSITION('PROFESOR' in d.maximo_titulo)>0 THEN 'PROFESOR'
+				WHEN POSITION('LICENCIAD' in d.maximo_titulo)>0 THEN 'LICENCIADO'
+				WHEN POSITION('MEDIC' in d.maximo_titulo)=1 THEN 'LICENCIADO'
+				WHEN POSITION('CALCULISTA' in d.maximo_titulo)>0 THEN 'LICENCIADO'
+				WHEN POSITION('BIOQU' in d.maximo_titulo)=1 THEN 'LICENCIADO'
+				WHEN POSITION('INGENIER' in d.maximo_titulo)>0 THEN 'INGENIERO'
+				WHEN POSITION('ESPECIALISTA' in d.maximo_titulo)>0 THEN 'ESPECIALISTA'
+				WHEN POSITION('MAGISTER' in d.maximo_titulo)>0 THEN 'MAGISTER'
+				WHEN POSITION('MASTER' in d.maximo_titulo)>0 THEN 'MAGISTER'
+				WHEN POSITION('DOCTOR' in d.maximo_titulo)>0 THEN 'DOCTOR'
+				ELSE 'TECNICO'
+		END as tipo_titulo,
+				d.maximo_titulo,
+		(SELECT division FROM cargos where legajo=d.legajo limit 1) as division
+FROM docentes d;
+ 
