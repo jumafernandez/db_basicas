@@ -34,5 +34,5 @@ Equipos_Docentes_2-2019-1-2020.xlsx:
 
 Inscriptos-2-2019_1-2020-Basicas.xlsx:
 ======================================
-+ Información: Nómina de docentes del Departamento con máximo título alcanzado.
++ Información: Cantidad de inscriptos por asignatura y comisión.
 + Origen del dato: Cantidad de Inscriptos por materia, comisión y sede por asignatura provisto por la DGAA al momento de finalización de inscripción a cursadas.

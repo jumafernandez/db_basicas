@@ -31,7 +31,9 @@ def cargar_tabla_docentes(data, engine_con):
             con.execute('ALTER TABLE docentes ADD COLUMN entidad_otorgante_titulo text;')
             con.execute('ALTER TABLE docentes ADD COLUMN fecha_emision_titulo date;')
     except: # Si existe borro los registros y vuelvo a cargar los nuevos
-        engine_con.execute("DELETE FROM docentes;")      
+        # Me quedo con las N cantidad de instancias con mayor score por clase
+        data = data.sort_values(['legajo'], ascending=False).groupby('legajo').head(1).reset_index(drop=True)
+        engine_con.execute("DELETE FROM docentes;")
         data.to_sql('docentes', engine_con, index=False, if_exists='append')
 
 
@@ -121,10 +123,16 @@ def cargar_tabla_equipos_docentes(data, engine_con):
     '''
 
     # Se borran las columnas repetidas
-    data = data.drop(['NOMBRE Y APELLIDO'], axis=1)
+    data = data.drop(['APELLIDO Y NOMBRE', 'CARGO', 'DENOMINACION', 'CARRERA'], axis=1)
 
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
-    data.columns = ['legajo_docente', 'codigo_actividad', 'comision', 'anio_cursada', 'cuatrimestre_cursada']
+    data.columns = ['legajo_docente', 'codigo_actividad', 'comision', 'anio_cursada', 'cuatrimestre_cursada']  
+ 
+    # Me quedo con sólo una asignación del docente en la materia en cada cuat/anio.
+    data = data.groupby(['legajo_docente', 'codigo_actividad', 'comision', 'anio_cursada', 'cuatrimestre_cursada']).head(1).reset_index(drop=True)
+    
+    # Elimino los que no tienen algún dato básico cargado
+    data = data.dropna()
 
     # Guardar el dataframe en la DB
     try: # Pruebo en caso que no exista
@@ -143,12 +151,12 @@ def cargar_tabla_actividades_academicas(data, engine_con):
     Esta funcion recibe las actividades académicas por área, división y subarea (si corresponde)
     y las carga en la tabla actividades_academicas de la DB exportaciones_basicas
     """
-    
+       
     # Se eliminan las columnas repetidas en otras tablas
-    data = data.drop(["Docente Responsable - Apellido y Nombres", "Carrera/s - Código"], axis=1)
+    data = data.drop(["Docente Responsable\nApellido y Nombres", "Carrera/s - Código"], axis=1)
 
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
-    data.columns = ['codigo', 'denominacion', 'legajo_docente_responsable', 'area', 'subarea', 'division', 'carreras_descripcion']
+    data.columns = ['codigo', 'denominacion', 'legajo_docente_responsable', 'correo_electronico_responsable', 'area', 'subarea', 'division', 'carreras_descripcion']
 
     # Guardar el dataframe en la DB
     try: # Pruebo en caso que no exista
@@ -167,9 +175,9 @@ def cargar_tabla_actividades_academicas_por_carrera(data, engine_con):
     Esta funcion recibe las actividades académicas por área, división y subarea (si corresponde)
     y las carga en la tabla asignaturas_por_carrera de la DB exportaciones_basicas
     """
-    
+   
     # Se eliminan las columnas repetidas en otras tablas
-    data = data.drop(["Denominación", "Carrera/s", "Docente Responsable - Apellido y Nombres", "Docente Responsable - Legajo", "Área", "Subárea", "División"], axis=1)
+    data = data.drop(["Denominación", "Carrera/s", "Docente Responsable\nApellido y Nombres", "Docente Responsable\nLegajo", "Correo electrónico", "Área", "Subárea", "División", "Carrera/s"], axis=1)
 
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
     data.columns = ['codigo_asignatura', 'codigo_carrera']
@@ -260,12 +268,12 @@ def cargar_maximo_titulo_en_docentes(data, engine_con):
     ''' Carga el máximo titulo de cada docente en la tabla docentes en la DB PostgreSQL
     en función del archivo descargado de Interfaz UNLu-Mapuche
     '''
-    import math
+    
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
-    data.columns = ['legajo', 'apellido', 'nombres', 'maximo_titulo', 'entidad_otorgante_titulo', 'fecha_emision', 'codigo_acreditacion']
+    data.columns = ['legajo', 'apellido', 'nombres', 'maximo_titulo', 'entidad_otorgante_titulo', 'fecha_emision', 'codigo_acreditacion', 'liquidacion']
 
     # Elimino la columna edad
-    data = data.drop(['apellido', 'nombres', 'codigo_acreditacion'], axis=1)
+    data = data.drop(['apellido', 'nombres', 'codigo_acreditacion', 'liquidacion'], axis=1)
     
     # Quito los espacios entre el texto en las columnas textuales (object)
     data_coltexto = data.select_dtypes(['object'])
