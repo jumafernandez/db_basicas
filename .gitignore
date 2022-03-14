@@ -32,3 +32,12 @@ __pycache__/funciones_pasador.cpython-38.pyc
 data/carreras.csv
 __pycache__/funciones.cpython-38.pyc
 der/der.dia~
+app/credenciales.py
+app/__pycache__/credenciales.cpython-38.pyc
+app/reportes/División-Biología.xlsx
+app/reportes/División-Computación.xlsx
+app/reportes/División-Estadística.xlsx
+app/reportes/División-Física.xlsx
+app/reportes/División-Matemática.xlsx
+app/reportes/División-Química.xlsx
+querys/apostolo_equipo.sql
