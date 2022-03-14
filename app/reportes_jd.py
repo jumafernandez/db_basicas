@@ -51,6 +51,24 @@ def generacion_reportes(division_parametro, anio_parametro, dir_reportes, db_upd
         path_archivo = f"{dir_reportes}/División-{division}-al-{db_update}.xlsx"
         
         # Defino el query con la info que quiero
+        query_dim_cargos = f"""SELECT *
+                               FROM resumen_cargos_por_division 
+                               WHERE division='{division}'
+                               ORDER BY 1;"""
+            
+        # Recupero la información de la base en función del query
+        df_cargos = get_data_pg(query_dim_cargos, USER, PASSWORD, HOST, PORT, DB)
+
+        # Defino el query con la info que quiero
+        query_dim_equipos = f"""SELECT *
+                               FROM resumen_equipos_por_oferta_academica 
+                               WHERE division='{division}' AND anio_cursada={anio_parametro}
+                               ORDER BY 1;"""
+            
+        # Recupero la información de la base en función del query
+        df_equipos = get_data_pg(query_dim_equipos, USER, PASSWORD, HOST, PORT, DB)
+
+        # Defino el query con la info que quiero
         query_dim_docente = f"""SELECT * 
                                 FROM reporte_dimension_docente_anual 
                                 WHERE division='{division}' 
@@ -71,23 +89,15 @@ def generacion_reportes(division_parametro, anio_parametro, dir_reportes, db_upd
         df_servicios = get_data_pg(query_dim_servicios, USER, PASSWORD, HOST, PORT, DB)
 
         # Defino el query con la info que quiero
-        query_dim_cargos = f"""SELECT *
-                               FROM resumen_cargos_por_division 
-                               WHERE division='{division}'
-                               ORDER BY 1;"""
+        query_dim_servicios_por_sede = f""" SELECT * 
+                                            FROM resumen_equipos_por_actividad_y_sede 
+                                            WHERE division='{division}' 
+                                            AND anio_cursada={anio_parametro}
+                                            ORDER BY 1, 2, 3;"""
             
         # Recupero la información de la base en función del query
-        df_cargos = get_data_pg(query_dim_cargos, USER, PASSWORD, HOST, PORT, DB)
-
-        # Defino el query con la info que quiero
-        query_dim_equipos = f"""SELECT *
-                               FROM resumen_equipos_por_oferta_academica 
-                               WHERE division='{division}' AND anio_cursada={anio_parametro}
-                               ORDER BY 1;"""
-            
-        # Recupero la información de la base en función del query
-        df_equipos = get_data_pg(query_dim_equipos, USER, PASSWORD, HOST, PORT, DB)
-    
+        df_servicios_por_sede = get_data_pg(query_dim_servicios_por_sede, USER, PASSWORD, HOST, PORT, DB)
+        
         # Genero el ExcelWriter
         writer = pd.ExcelWriter(path_archivo, engine = 'xlsxwriter')
 
@@ -96,6 +106,7 @@ def generacion_reportes(division_parametro, anio_parametro, dir_reportes, db_upd
         df_equipos.to_excel(writer, sheet_name = f'Equipos docentes - Año {anio_parametro}', index=False)
         df_docente.to_excel(writer, sheet_name = 'indicadores_docentes', index=False)
         df_servicios.to_excel(writer, sheet_name = 'indicadores_servicios', index=False)
+        df_servicios_por_sede.to_excel(writer, sheet_name = 'indicadores_servicios_por_sede', index=False)
 
         # Cierro el Excel writer
         writer.save()
