@@ -48,7 +48,7 @@ def generacion_reportes(division_parametro, anio_parametro, dir_reportes, db_upd
     for division in division_parametro:
         
         # Genero un path para el archivo
-        path_archivo = f"{dir_reportes}/División-{division}.xlsx"
+        path_archivo = f"{dir_reportes}/División-{division}-al-{db_update}.xlsx"
         
         # Defino el query con la info que quiero
         query_dim_docente = f"""SELECT * 
@@ -99,39 +99,8 @@ def generacion_reportes(division_parametro, anio_parametro, dir_reportes, db_upd
 
         # Cierro el Excel writer
         writer.save()
-
-def set_border(ws, cell_range):
-
-    from openpyxl.styles import Border, Side
-
-    rows = list(ws.iter_rows(cell_range))
-    side = Side(border_style='thin', color="FF000000")
-
-    rows = list(rows)  # we convert iterator to list for simplicity, but it's not memory efficient solution
-    max_y = len(rows) - 1  # index of the last row
-    for pos_y, cells in enumerate(rows):
-        max_x = len(cells) - 1  # index of the last cell
-        for pos_x, cell in enumerate(cells):
-            border = Border(
-                left=cell.border.left,
-                right=cell.border.right,
-                top=cell.border.top,
-                bottom=cell.border.bottom)
-
-            if pos_x == 0:
-                border.left = side
-            if pos_x == max_x:
-                border.right = side
-            if pos_y == 0:
-                border.top = side
-            if pos_y == max_y:
-                border.bottom = side
-
-            # set new border only if it's one of the edge cells
-            if pos_x == 0 or pos_x == max_x or pos_y == 0 or pos_y == max_y:
-                cell.border = border
-                
-def capa_presentacion_general(division_parametro, dir_reportes):
+               
+def capa_presentacion_general(division_parametro, dir_reportes, db_update):
     """
     Función que trabaja sobre el formato de los reportes.
 
@@ -150,7 +119,7 @@ def capa_presentacion_general(division_parametro, dir_reportes):
     for division in division_parametro:
         
         # Genero un path para el archivo
-        path_archivo = f"{dir_reportes}/División-{division}.xlsx"
+        path_archivo = f"{dir_reportes}/División-{division}-al-{db_update}.xlsx"
 
         libro = load_workbook(filename = path_archivo)
         
@@ -197,7 +166,7 @@ def capa_presentacion_general(division_parametro, dir_reportes):
         # Guardo los cambios            
         libro.save(path_archivo)
 
-def formato_condicional(division_parametro, dir_reportes):
+def formato_condicional(division_parametro, dir_reportes, db_update):
     """
     Se incorpora formato condicional para aquellas columnas con criterios predefinidos
 
@@ -217,7 +186,7 @@ def formato_condicional(division_parametro, dir_reportes):
     for division in division_parametro:
         
         # Genero un path para el archivo
-        path_archivo = f"{dir_reportes}/División-{division}.xlsx"
+        path_archivo = f"{dir_reportes}/División-{division}-al-{db_update}.xlsx"
 
         libro = load_workbook(filename = path_archivo)
         
@@ -263,6 +232,6 @@ if __name__ == '__main__':
     ACTUALIZACION_DB = '2022-03-12'
     
     generacion_reportes(DIVISIONES, ANIO, DIRECTORIO_REPORTES, ACTUALIZACION_DB)
-    capa_presentacion_general(DIVISIONES, DIRECTORIO_REPORTES)
-    formato_condicional(DIVISIONES, DIRECTORIO_REPORTES)
+    capa_presentacion_general(DIVISIONES, DIRECTORIO_REPORTES, ACTUALIZACION_DB)
+    formato_condicional(DIVISIONES, DIRECTORIO_REPORTES, ACTUALIZACION_DB)
     
