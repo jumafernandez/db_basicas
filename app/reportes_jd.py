@@ -144,7 +144,6 @@ def capa_presentacion_general(division_parametro, dir_reportes):
     """
     from openpyxl import load_workbook
     from openpyxl.styles import Border, Side, PatternFill, Alignment
-    from openpyxl.styles.numbers import FORMAT_PERCENTAGE_00
     from openpyxl.utils import get_column_letter
 
     # Recorro la lista de divisiones que me pasaron para generar los reportes
@@ -181,19 +180,19 @@ def capa_presentacion_general(division_parametro, dir_reportes):
                         # Está centrado si es un número
                         if (type(celda.value) is int) or (type(celda.value) is float): 
                             celda.alignment = Alignment(horizontal="center", vertical="center")
-                            if (type(celda.value) is float):
-                                celda.number_format = FORMAT_PERCENTAGE_00
                             
                     # Todas las celdas tienen borde
                     celda.border = border
-    
+            
+            # Acomodo el ancho óptimo de las columnas
             for column_cells in sheet.columns:
                 new_column_length = max(len(str(cell.value)) for cell in column_cells)
                 new_column_letter = (get_column_letter(column_cells[0].column))
+                if new_column_length > 15:
+                    sheet.column_dimensions[new_column_letter].width = new_column_length*1.02
                 if new_column_length > 0:
-                    sheet.column_dimensions[new_column_letter].width = new_column_length*1.16
-                elif new_column_length > 20:
-                    sheet.column_dimensions[new_column_letter].width = new_column_length*1.04
+                    sheet.column_dimensions[new_column_letter].width = new_column_length*1.25
+
                     
         # Guardo los cambios            
         libro.save(path_archivo)
@@ -211,11 +210,8 @@ def formato_condicional(division_parametro, dir_reportes):
     """
     from openpyxl import load_workbook
     from openpyxl.styles import PatternFill
-    from openpyxl.utils import get_column_letter
-    from openpyxl.formatting.rule import ColorScaleRule
-    from openpyxl.formatting.rule import IconSet, FormatObject
-    from openpyxl.formatting.rule import Rule, CellIsRule
-    from openpyxl.styles.differential import DifferentialStyle
+#    from openpyxl.utils import get_column_letter
+    from openpyxl.styles.numbers import FORMAT_PERCENTAGE_00
     
     # Recorro la lista de divisiones que me pasaron para generar los reportes
     for division in division_parametro:
@@ -229,36 +225,33 @@ def formato_condicional(division_parametro, dir_reportes):
 
         print(f'División: {division}, Sheet: indicadores_docentes.')
     
-        # Genero la regla
-        first = FormatObject(type='percent', val=0)
-        second = FormatObject(type='percent', val=0.5)
-        third = FormatObject(type='percent', val=1)
-        iconset = IconSet(iconSet='3TrafficLights1', cfvo=[third, second, first])
-        rule = Rule(type='iconSet', iconSet=iconset)
-
         # Creo los estilos para las reglas
-#        redFill = PatternFill(fgColor='FF8585', fill_type='solid')
-#        yellowFill = PatternFill(fgColor='FAFA8A', fill_type='solid')
-#        greenFill = PatternFill(fgColor='97FE86', fill_type='solid')
+        redFill = PatternFill(fgColor='FF8585', fill_type='solid')
+        yellowFill = PatternFill(fgColor='FAFA8A', fill_type='solid')
+        greenFill = PatternFill(fgColor='97FE86', fill_type='solid')
 
-        # Creo las reglas
-#        rule_neg = CellIsRule(operator='lessThan', formula=['0,5'], fill=redFill)
-#        rule_pos = CellIsRule(operator='greaterThan', formula=['0,5'], fill=greenFill)
-#        rule_caution = CellIsRule(operator='greaterThan', formula=['0,8'], fill=yellowFill)
-        
-        # Verifico la cantidad de celdas con datos
-        row_count = sheet_docentes.max_row
+        # Recorro la columna J donde está el índice de cobertura docente
+        i=1
+        for celda in sheet_docentes['J']:
+            
+            # Si es la primera celda no intervengo
+            if(i!=1):
+                # En caso que haya un valor
+                if celda.value is not None:
+                    # Evalúo el color de la celda en función del valor
+                    if celda.value >= 0.8:
+                        celda.fill = yellowFill
+                    elif celda.value < 0.5:
+                        celda.fill = redFill
+                    elif (celda.value >= 0.5 and celda.value < 0.8):
+                        celda.fill = greenFill
+                    # Defino como porcentaje y dos ceros al formato
+                    celda.number_format = FORMAT_PERCENTAGE_00
 
-        rule = ColorScaleRule(start_type='percentile', start_value=0, start_color='FF8585',
-                              mid_type='percentile', mid_value=50, mid_color='97FE86',
-                              end_type='percentile', end_value=70, end_color='FAFA8A')
-        
-        # Aplico las reglas
-#        sheet_docentes.conditional_formatting.add(f'J1:J{row_count}', rule_neg)
-#        sheet_docentes.conditional_formatting.add(f'J1:J{row_count}', rule_pos)
-#        sheet_docentes.conditional_formatting.add(f'J1:J{row_count}', rule_caution)
-        sheet_docentes.conditional_formatting.add(f'J1:J{row_count}', rule)
-        
+            # Incremento 1 para saber en que fila estoy
+            i=i+1
+            
+                
         # Guardo los cambios            
         libro.save(path_archivo)
 
