@@ -71,7 +71,7 @@ def main(dir, file_docentes, file_cargos, file_licencias, file_equipos, file_mat
 
 if __name__ == '__main__':
     # Path del archivo a cargar
-    DIRECTORIO = 'C:/Users/Juan/Documents/GitHub/db_basicas/data/'
+    DIRECTORIO = 'C:/Users/jumaf/Documents/GitHub/db_basicas/data/'
     ARCHIVO_DOCENTES    = 'basijuan_domicilio_todos.xlsx'
     ARCHIVO_CARGOS      = 'basijuan_cargos_vigentes.xlsx'
     ARCHIVO_EQUIPOS     = 'Equipos_docentes-2-2019_al_2-2021.xlsx'
