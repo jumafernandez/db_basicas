@@ -48,3 +48,4 @@ app/reportes/División-Física-al-2022-03-12.xlsx
 app/reportes/División-Matemática-al-2022-03-12.xlsx
 app/reportes/División-Química-al-2022-03-12.xlsx
 *.xlsx
+*.pyc

@@ -123,7 +123,7 @@ def cargar_tabla_equipos_docentes(data, engine_con):
     '''
 
     # Se borran las columnas repetidas
-    data = data.drop(['APELLIDO Y NOMBRE', 'CARGO', 'DENOMINACION', 'CARRERA'], axis=1)
+    data = data.drop(['APELLIDO Y NOMBRE', 'CARGO', 'DENOMINACION'], axis=1)
 
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
     data.columns = ['legajo_docente', 'codigo_actividad', 'comision', 'anio_cursada', 'cuatrimestre_cursada']  
@@ -153,7 +153,7 @@ def cargar_tabla_actividades_academicas(data, engine_con):
     """
        
     # Se eliminan las columnas repetidas en otras tablas
-    data = data.drop(["Docente Responsable\nApellido y Nombres", "Carrera/s - Código"], axis=1)
+    data = data.drop(["Docente Responsable\nApellido y Nombres", "Carrera/s - Código", "Co-Responsable"], axis=1)
 
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
     data.columns = ['codigo', 'denominacion', 'legajo_docente_responsable', 'correo_electronico_responsable', 'area', 'subarea', 'division', 'carreras_descripcion']
@@ -177,7 +177,7 @@ def cargar_tabla_actividades_academicas_por_carrera(data, engine_con):
     """
    
     # Se eliminan las columnas repetidas en otras tablas
-    data = data.drop(["Denominación", "Carrera/s", "Docente Responsable\nApellido y Nombres", "Docente Responsable\nLegajo", "Correo electrónico", "Área", "Subárea", "División", "Carrera/s"], axis=1)
+    data = data.drop(["Denominación", "Carrera/s", "Docente Responsable\nApellido y Nombres", "Docente Responsable\nLegajo", "Email", "Área", "Subárea", "División", "Carrera/s", "Co-Responsable"], axis=1)
 
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
     data.columns = ['codigo_asignatura', 'codigo_carrera']
@@ -224,7 +224,7 @@ def cargar_tabla_licencias(data, engine_con):
     '''
     import numpy as np
     
-    data = data.drop(['Legajo', 'Apellido', 'Nombre', 'Tipo Documento', 'Número', 'Categoría', 'División'], axis=1)
+    data = data.drop(['Legajo', 'Apellido', 'Nombre', 'Tipo Documento', 'Número', 'Categoría', 'División', 'Dependencia'], axis=1)
     
     # Cambio el nombre de las columnas para guardar en la tabla con los nombres del df
     data.columns = ['codigo_cargo', 'fecha_alta', 'fecha_baja', 'tipo_licencia', 'sede'] 
