@@ -5,6 +5,8 @@ Created on Sun Apr 12 10:17:05 2020
 @author: unlu
 """
 
+import sqlalchemy
+
 def cargar_tabla_docentes(data, engine_con):
     ''' Carga la tabla docentes en la DB PostgreSQL
     en función del archivo descargado de Interfaz UNLu-Mapuche
@@ -23,13 +25,17 @@ def cargar_tabla_docentes(data, engine_con):
     # Guardar el dataframe en la DB
     try: # Pruebo en caso que no exista
         data.to_sql('docentes', engine_con, index=False, if_exists='fail')
-        with engine_con.connect() as con:
-            con.execute('ALTER TABLE docentes ADD PRIMARY KEY(legajo);')
-            con.execute('ALTER TABLE docentes ALTER COLUMN numero_documento TYPE text;')
-            # Preparo la tabla para cargar el máximo título del docente
-            con.execute('ALTER TABLE docentes ADD COLUMN maximo_titulo text;')
-            con.execute('ALTER TABLE docentes ADD COLUMN entidad_otorgante_titulo text;')
-            con.execute('ALTER TABLE docentes ADD COLUMN fecha_emision_titulo date;')
+        try:
+            with engine_con.connect() as con:
+                con.execute('ALTER TABLE docentes ADD PRIMARY KEY(legajo);')
+                con.execute('ALTER TABLE docentes ALTER COLUMN numero_documento TYPE text;')
+                # Preparo la tabla para cargar el máximo título del docente
+                con.execute('ALTER TABLE docentes ADD COLUMN maximo_titulo text;')
+                con.execute('ALTER TABLE docentes ADD COLUMN entidad_otorgante_titulo text;')
+                con.execute('ALTER TABLE docentes ADD COLUMN fecha_emision_titulo date;')
+            print("Consultas ejecutadas correctamente")
+        except sqlalchemy.exc.SQLAlchemyError as e:
+            print("Ocurrió un error al ejecutar las consultas:", e)
     except: # Si existe borro los registros y vuelvo a cargar los nuevos
         # Me quedo con las N cantidad de instancias con mayor score por clase
         data = data.sort_values(['legajo'], ascending=False).groupby('legajo').head(1).reset_index(drop=True)
@@ -42,17 +48,17 @@ def separar_cargo(row):
     De acuerdo a un código de categoría (que determina cargo y dedicación),
     la función se queda únicamente con el cargo y lo retorna
     '''
-    if(row['Cód. Categoría'] == 213 or row['Cód. Categoría'] == 214 or row['Cód. Categoría'] == 215 or row['Cód. Categoría'] == 1215):
+    if(row['Categoría'] == 213 or row['Categoría'] == 214 or row['Categoría'] == 215 or row['Categoría'] == 1215):
         return 'PROFESOR TITULAR'
-    elif(row['Cód. Categoría'] == 216 or row['Cód. Categoría'] == 217 or row['Cód. Categoría'] == 218 or row['Cód. Categoría'] == 1218):
+    elif(row['Categoría'] == 216 or row['Categoría'] == 217 or row['Categoría'] == 218 or row['Categoría'] == 1218):
         return 'PROFESOR ASOCIADO'
-    elif(row['Cód. Categoría'] == 219 or row['Cód. Categoría'] == 220 or row['Cód. Categoría'] == 221 or row['Cód. Categoría'] == 1221):
+    elif(row['Categoría'] == 219 or row['Categoría'] == 220 or row['Categoría'] == 221 or row['Categoría'] == 1221):
         return 'PROFESOR ADJUNTO'
-    elif(row['Cód. Categoría'] == 222 or row['Cód. Categoría'] == 223 or row['Cód. Categoría'] == 224 or row['Cód. Categoría'] == 1224):
+    elif(row['Categoría'] == 222 or row['Categoría'] == 223 or row['Categoría'] == 224 or row['Categoría'] == 1224):
         return 'JEFE DE TRABAJOS PRÁCTICOS'
-    elif(row['Cód. Categoría'] == 225 or row['Cód. Categoría'] == 226 or row['Cód. Categoría'] == 227 or row['Cód. Categoría'] == 1227):
+    elif(row['Categoría'] == 225 or row['Categoría'] == 226 or row['Categoría'] == 227 or row['Categoría'] == 1227):
         return 'AYUDANTE DE PRIMERA'
-    elif(row['Cód. Categoría'] == 228 or row['Cód. Categoría'] == 1228):
+    elif(row['Categoría'] == 228 or row['Categoría'] == 1228):
         return 'AYUDANTE DE SEGUNDA'
     else:
         return None
@@ -62,13 +68,13 @@ def separar_dedicacion(row):
     De acuerdo a un código de categoría (que determina cargo y dedicación),
     la función se queda únicamente con la dedicación y la retorna
     '''
-    if(row['Cód. Categoría'] == 213 or row['Cód. Categoría'] == 216 or row['Cód. Categoría'] == 219 or row['Cód. Categoría'] == 222 or row['Cód. Categoría'] == 225):
+    if(row['Categoría'] == 213 or row['Categoría'] == 216 or row['Categoría'] == 219 or row['Categoría'] == 222 or row['Categoría'] == 225):
         return 'EXCLUSIVA'
-    if(row['Cód. Categoría'] == 214 or row['Cód. Categoría'] == 217 or row['Cód. Categoría'] == 220 or row['Cód. Categoría'] == 223 or row['Cód. Categoría'] == 226):
+    if(row['Categoría'] == 214 or row['Categoría'] == 217 or row['Categoría'] == 220 or row['Categoría'] == 223 or row['Categoría'] == 226):
         return 'SEMIEXCLUSIVA'
-    if(row['Cód. Categoría'] == 215 or row['Cód. Categoría'] == 218 or row['Cód. Categoría'] == 221 or row['Cód. Categoría'] == 224 or row['Cód. Categoría'] == 227 or row['Cód. Categoría'] == 228):
+    if(row['Categoría'] == 215 or row['Categoría'] == 218 or row['Categoría'] == 221 or row['Categoría'] == 224 or row['Categoría'] == 227 or row['Categoría'] == 228):
         return 'SIMPLE'
-    if(row['Cód. Categoría'] == 1218 or row['Cód. Categoría'] == 1221 or row['Cód. Categoría'] == 1224 or row['Cód. Categoría'] == 1227 or row['Cód. Categoría'] == 1228):
+    if(row['Categoría'] == 1218 or row['Categoría'] == 1221 or row['Categoría'] == 1224 or row['Categoría'] == 1227 or row['Categoría'] == 1228):
         return 'AD HONOREM'   
     else:
         return None
